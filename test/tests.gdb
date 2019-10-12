@@ -26,18 +26,24 @@
 echo ======================================================\n
 echo Running all tests..."\n\n
 
-test "PINA: 0x00,0x01 => PORTB: 0x02"
+test "PINA: 0x00, 0x01 => PORTB: 0x08"
 set state = init
 setPINA 0x00
 continue 5
 setPINA 0x01
 continue 5
-expectPORTB 0x02
-expect state pressB1
+expectPORTC 0x08
+expect state pressAdd
 checkResult
 
-test "PINA: 0x01, 0x00, 0x01, 0x00 => PORTB: 0x01"
+test "PINA: 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00 => PORTB: 0x08"
 set state = init
+setPINA 0x00
+continue 5
+setPINA 0x01
+continue 5
+setPINA 0x00
+continue 5
 setPINA 0x01
 continue 5
 setPINA 0x00
@@ -46,53 +52,11 @@ setPINA 0x01
 continue 5
 setPINA 0x00
 continue 5
-expectPORTB 0x01
-expect state onB0
+expectPORTC 0x09
+expect state releaseAdd
 checkResult
 
-test "PINA: 0x01, 0x00, 0x01, 0x01 => PORTB: 0x01"
-set state = init
-setPINA 0x01
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x01
-continue 5
-setPINA 0x01
-continue 5 
-expectPORTB 0x01
-expect state pressB0
-checkResult
 
-test "PINA: 0x00, 0x00, 0x00, 0x00 => PORTB: 0x01"
-set state = init
-setPINA 0x00
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x00
-continue 5
-expectPORTB 0x01
-expect state onB0
-checkResult
-
-test "PINA: 0x01, 0x00, 0x01, 0x00, 0x01 => PORTB: 0x01"
-set state = init
-setPINA 0x01
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x01
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x01
-continue 5
-expectPORTB 0x02
-expect state pressB1
-checkResult
 # Add tests below
 
 # Report on how many tests passed/tests ran
