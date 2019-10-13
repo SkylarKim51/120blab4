@@ -14,11 +14,11 @@
 
 #endif
 
-enum states {init, start, pressAdd, releaseAdd, pressMinus, releaseMinus, pressReset, releaseReset} state;
-unsigned char tempA = 0x00;
-unsigned char count = 0x07;
-unsigned char A0 = 0x00;
-unsigned char A1 = 0x00;
+enum states {init, start, oneAdd, pressAdd, releaseAdd, oneMinus, pressMinus, releaseMinus, pressReset, releaseReset} state;
+unsigned char tempA;
+unsigned char count;
+/*unsigned char A0 = 0x00;
+unsigned char A1 = 0x00;*/
 
 void stateMachine(){
 	switch(state) {
@@ -28,98 +28,109 @@ void stateMachine(){
 			break;
 
 		case start:
-			if(A0 && !A1){
-				state = pressAdd;
+			if(tempA == 0x01){
+				state = oneAdd;
 			}
-			else if(!A0 && A1){
-				state = pressMinus;
+			if(tempA == 0x02){
+				state = oneMinus;
 			}
-			else if(A0 && A1){
+			if(tempA == 0x03){
 				state = pressReset;
 			}
-			else if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = start;
 			}
 			printf("start, ");
 			break;
-		
+
+		case oneAdd:
+			state = pressAdd;
+			break;
+
 		case pressAdd:
-			if(A0 && !A1){
+			if(tempA == 0x01){
 				state = pressAdd;
 			}
-			else if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = releaseAdd;
 			}
-			else if(A0 && A1){
+			if(tempA == 0x03){
 				state = pressReset;
 			}
 			printf("pressAdd, ");
 			break;
 
 		case releaseAdd:
-			if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = releaseAdd;
 			}		
-			else if(!A0 && A1){
-				state = pressMinus;
+			if(tempA == 0x02){
+				state = oneMinus;
 			}
-			else if(A0 && !A1){
-				state = pressAdd;
+			if(tempA == 0x01){
+				state = oneAdd;
 			}
-			else if(A0 && A1){
+			if(tempA == 0x03){
 				state = pressReset;
 			}
 			printf("releaseAdd, ");					
 			break;
-
+		
+		case oneMinus:
+			state = pressMinus;
+			break;
+		
 		case pressMinus:
-			if(!A0 && A1){
+			if(tempA == 0x02){
 				state = pressMinus;
 			}
-			else if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = releaseMinus;
 			}
-			else if(A0 && A1){
+			if(tempA == 0x03){
 				state = pressReset;
 			}
 			printf("pressMinus, ");		
 			break;
 
 		case releaseMinus:
-			if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = releaseMinus;
 			}
-			else if(A0 && !A1){
-				state = pressAdd;
+			if(tempA == 0x01){
+				state = oneAdd;
 			}
-			else if(A0 && A1){
+			if(tempA == 0x03){
 				state = pressReset;
 			}
-			else if(!A0 && A1){
-				state = pressMinus;
+			if(tempA == 0x02){
+				state = oneMinus;
 			}
 			printf("releaseMinus, ");
 			break;
 		
 		case pressReset:
-			if((A0 && A1) || (!A0 && A1) || (A0 && !A1)){
+			if(tempA == 0x03 || tempA == 0x01 || tempA == 0x02){
 				state = pressReset;
 			}
-			else if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = releaseReset;
 			}
 			printf("pressReset, ");
 			break;
 		
 		case releaseReset:
-			if(!A0 && !A1){
+			if(tempA == 0x00){
 				state = releaseReset;
 			}
-			else if(A0 && !A1){
-				state = pressAdd;
+			if(tempA == 0x01){
+				state = oneAdd;
 			}
-			else if(!A0 && A1){
-				state = pressMinus;
+			if(tempA == 0x02){
+				state = oneMinus;
+			}
+			if(tempA == 0x03){
+				state = pressReset;
 			}
 			break;
 		default:
@@ -132,9 +143,10 @@ void stateMachine(){
 			break;
 		
 		case start:
-			break;
+			count = 0x07;
+			break;	
 
-		case pressAdd:
+		case oneAdd:
 			if(count >=  9){
 				count = count;
 			}
@@ -143,16 +155,22 @@ void stateMachine(){
 			}
 			break;
 	
+		case pressAdd:
+			break;
+
 		case releaseAdd:
 			break;
 		
-		case pressMinus:
+		case oneMinus:
 			if(count <= 0){
 				count = count;
 			}
 			else{
 				count = count - 1;
 			}
+			break;
+		
+		case pressMinus:
 			break;
 
 		case releaseMinus:
@@ -178,11 +196,10 @@ int main() {
 	state = init;
     while (1) {
 	tempA = PINA;
-	A0 = tempA & 0x01;
-	A1 = tempA & 0x02;
+/*	A0 = tempA & 0x01;
+	A1 = tempA & 0x02;*/
 	stateMachine();
-	PORTC = count;
-	count = 0x07;	
+	PORTC = count;	
     }
 	
     return 1;
