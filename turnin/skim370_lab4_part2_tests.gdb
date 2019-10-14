@@ -26,69 +26,75 @@
 echo ======================================================\n
 echo Running all tests..."\n\n
 
-test "PINA: 0x00 => PORTB: 0x00"
+test "PINA: 0x00, 0x01 => PORTC: 0x08"
 set state = init
 setPINA 0x00
 continue 5
-expectPORTB 0x00
+setPINA 0x01
+continue 5
+expectPORTC 0x08
+expect state pressAdd
+checkResult
+
+test "PINA: 0x00 => PORTC = 0x07"
+set state = init
+setPINA 0x00
+continue 5
+expectPORTC  0x07
 expect state start
 checkResult
 
-test "PINA: 0x00, 0x04, 0x00, 0x02, 0x00 => PORTB: 0x01"
+test "PINA: 0x03 => PORTC = 0x00"
+set state = init
+setPINA 0x03
+continue 5
+expectPORTC  0x00
+expect state pressReset
+checkResult
+
+test "PINA: 0x00, 0x01, 0x00, 0x01, 0x00, 0x01, 0x00 => PORTC: 0x09"
 set state = init
 setPINA 0x00
 continue 5
-setPINA 0x04
+setPINA 0x01
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x01
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x01
+continue 5
+setPINA 0x00
+continue 5
+expectPORTC 0x09
+expect state releaseAdd
+checkResult
+
+test "PINA: 0x01, 0x02, 0x02, 0x03, 0x00, 0x02, 0x02 => PORTC: 0x00"
+set state = init
+setPINA 0x01
+continue 5
+setPINA 0x02
+continue 5
+setPINA 0x02
+continue 5
+setPINA 0x03
 continue 5
 setPINA 0x00
 continue 5
 setPINA 0x02
 continue 5
-#setPINA 0x00
-#continue 5
-expectPORTB 0x01
-expect state pressY
-checkResult
-
-test "PINA: 0x00, 0x04, 0x00, 0x02, 0x00, 0x80 => PORTB: 0x00"
-set state = init
-setPINA 0x00
-continue 5
-setPINA 0x04
-continue 5
-setPINA 0x00
-continue 5
 setPINA 0x02
 continue 5
-setPINA 0x00
-continue 5
-setPINA 0x80
-continue 5
-expectPORTB 0x00
-expect state pressLock
+expectPORTC 0x00
+expect state pressMinus
 checkResult
 
-test "PINA: 0x00, 0x02, 0x00, 0x04, 0x00 => PORTB: 0x00"
+test "PINA: 0x01, 0x00, 0x02, 0x00, 0x01, 0x00, 0x02 => PORTC: 0x07"
 set state = init
-setPINA 0x00
-continue 5
-setPINA 0x02
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x04
-continue 5
-setPINA 0x00
-continue 5
-expectPORTB 0x00
-expect state releasePound
-checkResult
-
-test "PINA: 0x00, 0x04, 0x00, 0x02, 0x00, 0x01, 0x00, 0x04, 0x00, 0x02, 0x00 => PORTB: 0x01"
-set state = init
-setPINA 0x00
-continue 5
-setPINA 0x04
+setPINA 0x01
 continue 5
 setPINA 0x00
 continue 5
@@ -100,7 +106,15 @@ setPINA 0x01
 continue 5
 setPINA 0x00
 continue 5
-setPINA 0x04
+setPINA 0x02
+continue 5
+expectPORTC 0x07
+expect state pressMinus
+checkResult
+
+test "PINA: 0x02, 0x00, 0x02, 0x00, 0x02, 0x00, 0x02 => PORTC: 0x03"
+set state = init
+setPINA 0x02
 continue 5
 setPINA 0x00
 continue 5
@@ -108,71 +122,21 @@ setPINA 0x02
 continue 5
 setPINA 0x00
 continue 5
-expectPORTB 0x01
-expect state releaseY
-checkResult
-
-test "PINA: 0x00, 0x04, 0x00, 0x01, 0x00 => PORTB: 0x00"
-set state = init
-setPINA 0x00
-continue 5
-#setPINA 0x04
-#continue 5
-#setPINA 0x00
-#continue 5
-#setPINA 0x01
-#continue 5
-#setPINA 0x00
-#continue 5
-expectPORTB 0x00
-expect state start
-checkResult
-
-test "PINA: 0x04, 0x02 => PORTB: 0x00"
-set state = init
-#setPINA 0x00
-#continue 5
-setPINA 0x04
-continue 5
-#setPINA 0x00
-#continue 5
 setPINA 0x02
-continue 5
-#setPINA 0x00
-#continue 5
-#setPINA 0x80
-#continue 5
-expectPORTB 0x00
-expect state start
-checkResult
-
-test "PINA: 0x80, 0x00, 0x04, 0x00, 0x02, 0x00 => PORTB: 0x01"
-set state = init
-setPINA 0x80
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x04
 continue 5
 setPINA 0x00
 continue 5
 setPINA 0x02
 continue 5
-setPINA 0x00
-continue 5
-expectPORTB 0x01
-expect state releaseY
+expectPORTC 0x03
+expect state pressMinus
 checkResult
 
-test "PINA: 0x00, 0x04, 0x00, 0x02, 0x00, 0x01, 0x00, 0x04, 0x00, 0x01, 0x00 => PORTB: 0x01"
+test "PINA: 0x01, 0x03, 0x00, 0x01, 0x00, 0x01, 0x00 => PORTC: 0x02"
 set state = init
-setPINA 0x00
+setPINA 0x01
 continue 5
-setPINA 0x04
-continue 5
-setPINA 0x00
-continue 5
-setPINA 0x02
+setPINA 0x03
 continue 5
 setPINA 0x00
 continue 5
@@ -180,18 +144,53 @@ setPINA 0x01
 continue 5
 setPINA 0x00
 continue 5
-setPINA 0x04
+setPINA 0x01
+continue 5
+setPINA 0x00
+continue 5
+expectPORTC 0x02
+expect state releaseAdd
+checkResult
+
+test "PINA: 0x01, 0x02, 0x01, 0x02, 0x03, 0x00, 0x01 => PORTC: 0x01"
+set state = init
+setPINA 0x01
+continue 5
+setPINA 0x02
+continue 5
+setPINA 0x01
+continue 5
+setPINA 0x02
+continue 5
+setPINA 0x03
 continue 5
 setPINA 0x00
 continue 5
 setPINA 0x01
 continue 5
-setPINA 0x00
-continue 5
-expectPORTB 0x01
-expect state start
+expectPORTC 0x01
+expect state pressAdd
 checkResult
 
+test "PINA: 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 => PORTC: 0x07"
+set state = init
+setPINA 0x00
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x00
+continue 5
+setPINA 0x00
+continue 5
+expectPORTC 0x07
+expect state start
+checkResult
 
 
 

@@ -1,7 +1,7 @@
 /*	Author: skim370
  *  Partner(s) Name: 
  *	Lab Section:
- *	Assignment: Lab #4  Exercise #1
+ *	Assignment: Lab #4  Exercise #2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -13,12 +13,11 @@
 #include "simAVRHeader.h"
 
 #endif
-
-enum states {init, start, pressPound, releasePound, pressY, release Y, pressLock} state;
+enum states {init, start, pressPound, releasePound, pressY, releaseY, pressLock} state;
 unsigned char tempA;
 unsigned char count;
-/*unsigned char A0 = 0x00;
-unsigned char A1 = 0x00;*/
+unsigned char tempB;
+unsigned char reloadA;
 
 void stateMachine(){
 	switch(state) {
@@ -33,6 +32,7 @@ void stateMachine(){
 			else if(tempA & 0x80){
 				state = pressLock;
 			}
+			tempA = reloadA;
 			else{
 				state = start;
 			}
@@ -48,6 +48,7 @@ void stateMachine(){
 			else if(tempA & 0x80){
 				state = pressLock;
 			}
+			tempA = reloadA;
 			else{
 				state = start;
 			}
@@ -57,30 +58,29 @@ void stateMachine(){
 			if(tempA == 0x00){
 				state = releasePound;
 			}
-			else if(tempA == 0x01){
-				state = PressY;
-			}
-			else if(tempA == 0x80){
-				state = pressLock;
-			}
-			else {
-				state = start;
-			}
-			break;
-
-		case PressY:
-			if(tempA == 0x00){
-				state = releaseY;
-			}		
-			else if(tempA == 0x01){
+			else if(tempA == 0x02){
 				state = pressY;
 			}
 			else if(tempA & 0x80){
 				state = pressLock;
 			}
-			else if(tempA == 0x03){
-				state = pressReset;
+			tempA = reloadA;
+			else {
+				state = start;
 			}
+			break;
+
+		case pressY:
+			if(tempA == 0x00){
+				state = releaseY;
+			}		
+			else if(tempA == 0x02){
+				state = pressY;
+			}
+			else if(tempA & 0x80){
+				state = pressLock;
+			}
+			tempA = reloadA;
 			else{
 				state = start;
 			}					
@@ -93,12 +93,23 @@ void stateMachine(){
 			else if(tempA & 0x80){
 				state = pressLock;
 			}
+			tempA = reloadA;
 			else{
 				state = start;
 			}
 			break;
 		
-		case pressMinus:
+		case pressLock:
+			if(tempA & 0x80){
+				state = pressLock;
+			}
+			tempA = reloadA;
+			else if(tempA == 0x00){
+				state = start;
+			}
+			else {
+				state = pressLock;
+			}
 
 
 		default:
@@ -111,63 +122,63 @@ void stateMachine(){
 			break;
 		
 		case start:
-			count = 0x07;
+			if(count == 0x02){
+				tempB = 0x01;
+				count = count;
+			}
+			else{
+				tempB = 0x00;
+				count = 0x00;
+			}	
 			break;	
 
-		case oneAdd:
-			if(count >=  9){
-				count = count;
-			}
-			else{
-				count = count + 1;
-			}
+		case pressPound:
 			break;
 	
-		case pressAdd:
-			break;
-
-		case releaseAdd:
-			break;
-		
-		case oneMinus:
-			if(count <= 0){
+		case releasePound:
+			if(count ==  0x02){
 				count = count;
 			}
 			else{
-				count = count - 1;
+				count = 0x01;
+			}
+			break;
+
+		case pressY:
+			break;
+		
+		case releaseY:
+			if(count == 0x01){
+				count = 0x02;
+				tempB = 0x01;
 			}
 			break;
 		
-		case pressMinus:
-			break;
-
-		case releaseMinus:
-			break;
-
-		case pressReset:
-			count = 0;
-			break;
-
-		case releaseReset:
+		case pressLock:
+			count = 0x00;
+			tempB = 0x00;
 			break;
 
 		default:
-			count = 0x07;
+			count = count;
+			tempB = tempB;
 			break;
 	}
 }		
 
 int main() { 
 	DDRA = 0x00;	PORTA = 0xFF;
-	DDRC = 0xFF;	PORTC = 0x00;
+	DDRB = 0xFF;	PORTB = 0x00;
 
 	state = init;
     while (1) {
 	tempA = PINA;
-/*	A0 = tempA & 0x01;
-	A1 = tempA & 0x02;*/
+	reloadA = tempA;
 	stateMachine();
-	PORTC = count;	
+	PORTB = count;
+	tempB = 0x00;
+	count = 0x00;
+	
     }
 	
     return 1;
