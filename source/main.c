@@ -14,7 +14,7 @@
 
 #endif
 
-enum states {init, start, oneAdd, pressAdd, releaseAdd, oneMinus, pressMinus, releaseMinus, pressReset, releaseReset} state;
+enum states {init, start, pressPound, releasePound, pressY, release Y, pressLock} state;
 unsigned char tempA;
 unsigned char count;
 /*unsigned char A0 = 0x00;
@@ -24,115 +24,83 @@ void stateMachine(){
 	switch(state) {
 		case init:
 			state = start;
-			printf("init, ");
 			break;
 
 		case start:
-			if(tempA == 0x01){
-				state = oneAdd;
+			if(tempA == 0x04){
+				state = pressPound;
 			}
-			if(tempA == 0x02){
-				state = oneMinus;
+			else if(tempA & 0x80){
+				state = pressLock;
 			}
-			if(tempA == 0x03){
-				state = pressReset;
-			}
-			if(tempA == 0x00){
+			else{
 				state = start;
 			}
-			printf("start, ");
 			break;
 
-		case oneAdd:
-			state = pressAdd;
-			break;
-
-		case pressAdd:
-			if(tempA == 0x01){
-				state = pressAdd;
-			}
+		case pressPound:
 			if(tempA == 0x00){
-				state = releaseAdd;
+				state = releasePound;
 			}
-			if(tempA == 0x03){
-				state = pressReset;
+			else if(tempA == 0x04){
+				state = pressPound;
 			}
-			printf("pressAdd, ");
+			else if(tempA & 0x80){
+				state = pressLock;
+			}
+			else{
+				state = start;
+			}
 			break;
 
-		case releaseAdd:
+		case releasePound:
 			if(tempA == 0x00){
-				state = releaseAdd;
+				state = releasePound;
+			}
+			else if(tempA == 0x01){
+				state = PressY;
+			}
+			else if(tempA == 0x80){
+				state = pressLock;
+			}
+			else {
+				state = start;
+			}
+			break;
+
+		case PressY:
+			if(tempA == 0x00){
+				state = releaseY;
 			}		
-			if(tempA == 0x02){
-				state = oneMinus;
+			else if(tempA == 0x01){
+				state = pressY;
 			}
-			if(tempA == 0x01){
-				state = oneAdd;
+			else if(tempA & 0x80){
+				state = pressLock;
 			}
-			if(tempA == 0x03){
+			else if(tempA == 0x03){
 				state = pressReset;
 			}
-			printf("releaseAdd, ");					
+			else{
+				state = start;
+			}					
 			break;
 		
-		case oneMinus:
-			state = pressMinus;
+		case releaseY:
+			if(tempA == 0x00){
+				state = releaseY;
+			}
+			else if(tempA & 0x80){
+				state = pressLock;
+			}
+			else{
+				state = start;
+			}
 			break;
 		
 		case pressMinus:
-			if(tempA == 0x02){
-				state = pressMinus;
-			}
-			if(tempA == 0x00){
-				state = releaseMinus;
-			}
-			if(tempA == 0x03){
-				state = pressReset;
-			}
-			printf("pressMinus, ");		
-			break;
 
-		case releaseMinus:
-			if(tempA == 0x00){
-				state = releaseMinus;
-			}
-			if(tempA == 0x01){
-				state = oneAdd;
-			}
-			if(tempA == 0x03){
-				state = pressReset;
-			}
-			if(tempA == 0x02){
-				state = oneMinus;
-			}
-			printf("releaseMinus, ");
-			break;
-		
-		case pressReset:
-			if(tempA == 0x03 || tempA == 0x01 || tempA == 0x02){
-				state = pressReset;
-			}
-			if(tempA == 0x00){
-				state = releaseReset;
-			}
-			printf("pressReset, ");
-			break;
-		
-		case releaseReset:
-			if(tempA == 0x00){
-				state = releaseReset;
-			}
-			if(tempA == 0x01){
-				state = oneAdd;
-			}
-			if(tempA == 0x02){
-				state = oneMinus;
-			}
-			if(tempA == 0x03){
-				state = pressReset;
-			}
-			break;
+
 		default:
 			state = start;
 			break;
