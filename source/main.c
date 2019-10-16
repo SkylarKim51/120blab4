@@ -13,11 +13,10 @@
 #include "simAVRHeader.h"
 
 #endif
-enum states {init, start, pressPound, releasePound, pressY, releaseY, pressLock} state;
+enum states {init, start, pressPound, pressY, pressLock} state;
 unsigned char tempA;
 unsigned char count;
 unsigned char tempB;
-unsigned char reloadA;
 
 void stateMachine(){
 	switch(state) {
@@ -26,91 +25,61 @@ void stateMachine(){
 			break;
 
 		case start:
-			if(tempA == 0x04){
+			if(tempA == 0x00){
+				state = start;
+			}
+			else if(tempA == 0x04){
 				state = pressPound;
 			}
-			else if(tempA & 0x80){
+			else if(tempA == 0x80){
 				state = pressLock;
 			}
-			tempA = reloadA;
 			else{
 				state = start;
 			}
 			break;
 
 		case pressPound:
-			if(tempA == 0x00){
-				state = releasePound;
+			if((tempA == 0x04) || (tempA == 0x00)){
+				state = pressPound;
+			}
+			else if(tempA == 0x02){
+				state = pressY;
+			}
+			else if(tempA == 0x80){
+				state = pressLock;
+			}
+			else{
+				state = start;
+			}
+			break;
+			
+		case pressY:
+			if((tempA == 0x00) || (tempA == 0x02)){
+				state = pressY;
 			}
 			else if(tempA == 0x04){
 				state = pressPound;
 			}
-			else if(tempA & 0x80){
+			else if(tempA == 0x80){
 				state = pressLock;
 			}
-			tempA = reloadA;
-			else{
-				state = start;
-			}
-			break;
-
-		case releasePound:
-			if(tempA == 0x00){
-				state = releasePound;
-			}
-			else if(tempA == 0x02){
-				state = pressY;
-			}
-			else if(tempA & 0x80){
-				state = pressLock;
-			}
-			tempA = reloadA;
-			else {
-				state = start;
-			}
-			break;
-
-		case pressY:
-			if(tempA == 0x00){
-				state = releaseY;
-			}		
-			else if(tempA == 0x02){
-				state = pressY;
-			}
-			else if(tempA & 0x80){
-				state = pressLock;
-			}
-			tempA = reloadA;
-			else{
-				state = start;
-			}					
-			break;
-		
-		case releaseY:
-			if(tempA == 0x00){
-				state = releaseY;
-			}
-			else if(tempA & 0x80){
-				state = pressLock;
-			}
-			tempA = reloadA;
 			else{
 				state = start;
 			}
 			break;
 		
 		case pressLock:
-			if(tempA & 0x80){
+			if(tempA == 0x80){
 				state = pressLock;
 			}
-			tempA = reloadA;
-			else if(tempA == 0x00){
+			else if(tempA == 0x04){
+				state = pressPound;
+			}
+			else{
 				state = start;
 			}
-			else {
-				state = pressLock;
-			}
-
+  			break;
 
 		default:
 			state = start;
@@ -120,43 +89,17 @@ void stateMachine(){
 	switch(state){
 		case init:
 			break;
-		
+			
 		case start:
-			if(count == 0x02){
-				tempB = 0x01;
-				count = count;
-			}
-			else{
-				tempB = 0x00;
-				count = 0x00;
-			}	
-			break;	
-
+			break;
+		
 		case pressPound:
 			break;
-	
-		case releasePound:
-			if(count ==  0x02){
-				count = count;
-			}
-			else{
-				count = 0x01;
-			}
-			break;
-
+		
 		case pressY:
 			break;
-		
-		case releaseY:
-			if(count == 0x01){
-				count = 0x02;
-				tempB = 0x01;
-			}
-			break;
-		
+	
 		case pressLock:
-			count = 0x00;
-			tempB = 0x00;
 			break;
 
 		default:
